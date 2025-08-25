@@ -1,0 +1,972 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-1.0">
+    <title>Situs Web Berita dengan Panel Admin</title>
+    <!-- Font Inter dari Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Gaya Kustom untuk website */
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(to bottom, #dbeafe, #eff6ff); /* Gradasi biru pastel yang lembut */
+        }
+        .text-gradient-blue {
+            background-image: linear-gradient(to right, #005f9f, #00bfff); /* Gradasi biru metalik untuk judul */
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .text-gradient-cyan {
+            background-image: linear-gradient(to right, #008f8f, #00ffff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .bg-gradient-hover {
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+        .shadow-custom {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+        .shadow-custom:hover {
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+            transform: translateY(-5px);
+        }
+        /* Memastikan gambar tidak terpotong */
+        img {
+          object-fit: contain;
+        }
+
+        /* Mengatur gambar artikel utama agar tidak terpotong */
+        #main-article-section img {
+            object-fit: cover;
+        }
+        
+        /* Animasi Marquee untuk pergerakan otomatis */
+        @keyframes marquee-left {
+            0% {
+                transform: translateX(0);
+            }
+            100% {
+                transform: translateX(-50%); /* Mengubah pergerakan menjadi 50% */
+            }
+        }
+        /* Kontainer untuk Marquee */
+        .marquee-container {
+            animation: marquee-left 30s linear infinite;
+            white-space: nowrap;
+            display: flex;
+            gap: 1.5rem; /* setara dengan Tailwind gap-6 */
+        }
+        .marquee-container:hover {
+            animation-play-state: paused;
+        }
+        .marquee-container > a {
+            flex-shrink: 0;
+            width: 300px; /* Lebar tetap untuk setiap kartu di slider */
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <!-- Kontainer Utama Aplikasi -->
+    <div id="app">
+        <!-- Tampilan Website Utama (Public) -->
+        <div id="public-view">
+            <!-- BAGIAN 1: HEADER & NAVBAR -->
+            <header class="bg-white shadow-custom py-4 sticky top-0 z-50 rounded-b-xl mx-2 mt-2">
+                <nav class="container mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center">
+                    <!-- Logo dan judul di paling kiri -->
+                    <div class="flex items-center gap-4">
+                        <img id="logo-display" src="https://placehold.co/100x40/c0c0c0/ffffff?text=Logo" alt="Logo Website" class="h-10">
+                        <div id="website-title" class="text-3xl font-bold text-gradient-blue">
+                            PORTAL BERITA
+                        </div>
+                    </div>
+                    <div id="nav-menu" class="hidden md:flex space-x-8 text-gray-600 font-medium">
+                        <!-- Konten akan dimuat oleh JavaScript -->
+                    </div>
+                    <!-- Tombol untuk mobile dan ke panel admin -->
+                    <div class="flex items-center gap-4">
+                        <button id="toggle-panel-btn" class="bg-blue-950 text-white font-medium p-2 rounded-full hover:bg-sky-800 transition duration-300">
+                            <!-- Ikon gerigi (SVG) -->
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8zm-1-10v-3h2v3h-2zm0 4v-3h2v3h-2zm-1-7h2v-2h-2v2zm0 4h2v-2h-2v2zm-1 4h2v-2h-2v2zm0 4h2v-2h-2v2z"/>
+                            </svg>
+                        </button>
+                        <button class="md:hidden text-gray-600 focus:outline-none">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
+                            </svg>
+                        </button>
+                    </div>
+                </nav>
+            </header>
+        
+            <!-- BAGIAN 2: ARTIKEL UTAMA & TERBARU -->
+            <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                <!-- Section untuk artikel utama -->
+                <section id="main-article-section" class="mb-12 flex flex-col lg:flex-row gap-8">
+                    <!-- Konten akan dimuat oleh JavaScript -->
+                </section>
+                
+                <!-- Section untuk artikel populer -->
+                <section id="populer" class="py-8">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6">Berita Populer</h2>
+                    <!-- Kontainer luar untuk efek hidden overflow -->
+                    <div class="overflow-hidden">
+                        <!-- Kontainer dalam untuk animasi marquee -->
+                        <div id="popular-articles-container" class="marquee-container">
+                            <!-- Konten akan dimuat oleh JavaScript -->
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Section untuk kategori -->
+                <section id="kategori" class="py-8">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6">Telusuri Berdasarkan Kategori</h2>
+                    <div id="kategori-container" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 text-center">
+                        <!-- Kategori akan dimuat secara dinamis oleh JavaScript -->
+                    </div>
+                </section>
+            </main>
+        
+            <!-- BAGIAN 5: FOOTER -->
+            <footer class="bg-gray-900 text-gray-400 py-6">
+                <div class="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                    <div class="mt-4 text-sm" id="footer-contact">
+                        <!-- Konten kontak akan dimuat di sini -->
+                    </div>
+                    <p class="mt-4">&copy; 2024 Portal Berita Anda. Semua Hak Cipta Dilindungi.</p>
+                </div>
+            </footer>
+        </div>
+
+        <!-- Tampilan Halaman Artikel (Awalnya Tersembunyi) -->
+        <div id="article-detail-view" class="container mx-auto px-4 sm:px-6 lg:px-8 py-8 hidden">
+            <!-- Header Halaman Artikel -->
+            <header class="bg-white shadow-custom py-4 rounded-b-xl mb-8 mx-2 mt-2">
+                <nav class="flex justify-between items-center">
+                    <button id="back-to-home-btn" class="bg-blue-950 text-white font-medium py-2 px-4 rounded-full hover:bg-sky-800 transition duration-300">
+                        &larr; Kembali ke Beranda
+                    </button>
+                    <div class="text-3xl font-bold text-gradient-blue">
+                        CAP ECOSYSTEM
+                    </div>
+                </nav>
+            </header>
+            <div id="article-content" class="bg-white p-6 rounded-3xl shadow-custom">
+                <!-- Konten artikel akan dimuat di sini -->
+            </div>
+        </div>
+        
+        <!-- Tampilan Halaman Artikel per Kategori (Awalnya Tersembunyi) -->
+        <div id="category-articles-view" class="container mx-auto px-4 sm:px-6 lg:px-8 py-8 hidden">
+            <header class="bg-white shadow-custom py-4 rounded-b-xl mb-8 mx-2 mt-2">
+                <nav class="flex justify-between items-center">
+                    <button onclick="showPublicView()" class="bg-blue-950 text-white font-medium py-2 px-4 rounded-full hover:bg-sky-800 transition duration-300">
+                        &larr; Kembali ke Beranda
+                    </button>
+                    <div class="text-3xl font-bold text-gradient-blue">
+                        PORTAL BERITA
+                    </div>
+                </nav>
+            </header>
+            <h2 id="category-title" class="text-3xl font-bold text-gray-800 mb-6"></h2>
+            <div id="category-articles-list" class="space-y-4">
+                <!-- Daftar artikel kategori akan dimuat di sini -->
+            </div>
+        </div>
+
+        <!-- Tampilan Panel Admin (Dashboard) -->
+        <div id="admin-panel" class="container mx-auto px-4 sm:px-6 lg:px-8 py-8 hidden">
+            <!-- Header Panel Admin -->
+            <header class="bg-blue-950 text-white shadow-custom py-4 rounded-b-xl mb-8">
+                <nav class="flex justify-between items-center px-4">
+                    <div class="text-3xl font-bold">PANEL ADMIN</div>
+                    <button id="toggle-public-btn" class="bg-white text-blue-950 font-medium py-2 px-4 rounded-full hover:bg-gray-200 transition duration-300">
+                        Kembali ke Website
+                    </button>
+                </nav>
+            </header>
+
+            <!-- Form Pengaturan Menu -->
+            <div class="bg-white p-6 rounded-3xl shadow-custom mb-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">Pengaturan Menu Navigasi</h2>
+                <form id="menu-form" class="flex flex-col sm:flex-row gap-2 mb-4">
+                    <input type="text" id="menu-text" placeholder="Teks Menu (ex: Beranda)" class="flex-1 rounded-md border-gray-300 shadow-sm p-2">
+                    <input type="text" id="menu-url" placeholder="URL Menu (ex: #beranda)" class="flex-1 rounded-md border-gray-300 shadow-sm p-2">
+                    <button type="submit" id="submit-menu-btn" class="bg-blue-950 text-white font-bold py-2 px-4 rounded-md hover:bg-sky-800 transition duration-300">
+                        Tambah Menu
+                    </button>
+                </form>
+                <div id="menu-list" class="space-y-2">
+                    <!-- Daftar menu akan dimuat di sini -->
+                </div>
+            </div>
+
+            <!-- Form Pengaturan Kategori Berita -->
+            <div class="bg-white p-6 rounded-3xl shadow-custom mb-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">Pengaturan Kategori Berita</h2>
+                <form id="category-form" class="flex flex-col sm:flex-row gap-2 mb-4">
+                    <input type="text" id="category-input" placeholder="Nama Kategori (ex: Sains)" class="flex-1 rounded-md border-gray-300 shadow-sm p-2">
+                    <button type="submit" id="submit-category-btn" class="bg-blue-950 text-white font-bold py-2 px-4 rounded-md hover:bg-sky-800 transition duration-300">
+                        Tambah Kategori
+                    </button>
+                </form>
+                <div id="category-list" class="space-y-2">
+                    <!-- Daftar kategori akan dimuat di sini -->
+                </div>
+            </div>
+
+            <!-- Form Pengaturan Judul Website -->
+            <div class="bg-white p-6 rounded-3xl shadow-custom mb-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">Pengaturan Judul Website</h2>
+                <div class="flex flex-col sm:flex-row gap-4 items-center">
+                    <div class="flex-1 w-full space-y-2">
+                        <label for="website-title-input" class="block text-sm font-medium text-gray-700">Teks Judul Website</label>
+                        <div class="flex">
+                            <input type="text" id="website-title-input" name="website-title-input" class="flex-1 block w-full rounded-l-md border-gray-300 shadow-sm p-2 focus:border-sky-500 focus:ring focus:ring-sky-200 focus:ring-opacity-50" placeholder="Contoh: Berita Terkini">
+                            <button id="update-title-btn" type="button" class="bg-blue-950 text-white font-bold py-2 px-4 rounded-r-md hover:bg-sky-800 transition duration-300">
+                                Perbarui
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form Pengaturan Logo -->
+            <div class="bg-white p-6 rounded-3xl shadow-custom mb-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">Pengaturan Logo</h2>
+                <div class="flex flex-col sm:flex-row gap-4 items-center">
+                    <img id="logo-preview" src="https://placehold.co/100x40/c0c0c0/ffffff?text=Logo" alt="Pratinjau Logo" class="h-16 w-auto rounded-lg shadow-md border-2 border-gray-200 object-contain">
+                    <div class="flex-1 w-full space-y-2">
+                        <label for="logo-upload" class="block text-sm font-medium text-gray-700">Unggah Gambar Logo</label>
+                        <input type="file" id="logo-upload" name="logo-upload" accept="image/*" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 focus:border-sky-500 focus:ring focus:ring-sky-200 focus:ring-opacity-50">
+                        <button id="update-logo-btn" type="button" class="bg-blue-950 text-white font-bold py-2 px-4 rounded-md hover:bg-sky-800 transition duration-300 w-full">
+                            Perbarui Logo
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form Pengaturan Kontak -->
+            <div class="bg-white p-6 rounded-3xl shadow-custom mb-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">Pengaturan Kontak</h2>
+                <form id="contact-form" class="space-y-4">
+                    <div>
+                        <label for="contact-address" class="block text-sm font-medium text-gray-700">Alamat</label>
+                        <textarea id="contact-address" name="contact-address" rows="2" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 focus:border-sky-500 focus:ring focus:ring-sky-200 focus:ring-opacity-50"></textarea>
+                    </div>
+                    <div>
+                        <label for="contact-phone" class="block text-sm font-medium text-gray-700">Nomor Telepon</label>
+                        <input type="text" id="contact-phone" name="contact-phone" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 focus:border-sky-500 focus:ring focus:ring-sky-200 focus:ring-opacity-50">
+                    </div>
+                    <div>
+                        <label for="contact-email" class="block text-sm font-medium text-gray-700">Email</label>
+                        <input type="email" id="contact-email" name="contact-email" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 focus:border-sky-500 focus:ring focus:ring-sky-200 focus:ring-opacity-50"></textarea>
+                    </div>
+                    <button type="submit" class="w-full bg-blue-950 text-white font-bold py-2 px-4 rounded-md hover:bg-sky-800 transition duration-300">
+                        Simpan Kontak
+                    </button>
+                </form>
+            </div>
+
+            <!-- Form Tambah/Edit Artikel -->
+            <div class="bg-white p-6 rounded-3xl shadow-custom mb-8">
+                <h2 id="form-title" class="text-2xl font-bold text-gray-800 mb-6">Tambah Artikel Baru</h2>
+                <form id="article-form" class="space-y-4">
+                    <div>
+                        <label for="title" class="block text-sm font-medium text-gray-700">Judul</label>
+                        <input type="text" id="title" name="title" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 focus:border-sky-500 focus:ring focus:ring-sky-200 focus:ring-opacity-50">
+                    </div>
+                    <div>
+                        <label for="category" class="block text-sm font-medium text-gray-700">Kategori</label>
+                        <select id="category" name="category" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 focus:border-sky-500 focus:ring focus:ring-sky-200 focus:ring-opacity-50">
+                            <!-- Opsi akan diisi secara dinamis oleh JavaScript -->
+                        </select>
+                    </div>
+                    <div>
+                        <label for="placement" class="block text-sm font-medium text-gray-700">Penempatan</label>
+                        <select id="placement" name="placement" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 focus:border-sky-500 focus:ring focus:ring-sky-200 focus:ring-opacity-50">
+                            <option value="terbaru">Berita Terbaru</option>
+                            <option value="populer">Berita Populer</option>
+                            <option value="beranda">Beranda (Artikel Utama)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="summary" class="block text-sm font-medium text-gray-700">Ringkasan</label>
+                        <textarea id="summary" name="summary" rows="4" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 focus:border-sky-500 focus:ring focus:ring-sky-200 focus:ring-opacity-50"></textarea>
+                    </div>
+                    <div>
+                        <label for="image-upload" class="block text-sm font-medium text-gray-700">Unggah Gambar</label>
+                        <input type="file" id="image-upload" name="image-upload" accept="image/*" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 focus:border-sky-500 focus:ring focus:ring-sky-200 focus:ring-opacity-50">
+                    </div>
+                     <div>
+                        <label for="content" class="block text-sm font-medium text-gray-700 mb-2">Isi Artikel Lengkap</label>
+                        <!-- Kontrol editor teks -->
+                        <div class="flex items-center gap-2 mb-2 p-2 bg-gray-100 rounded-md border border-gray-300">
+                            <button type="button" onclick="formatDoc('bold')" class="p-2 rounded-md bg-gray-200 hover:bg-gray-300 transition duration-200">
+                                <b>B</b>
+                            </button>
+                            <button type="button" onclick="formatDoc('italic')" class="p-2 rounded-md bg-gray-200 hover:bg-gray-300 transition duration-200">
+                                <i>I</i>
+                            </button>
+                            <button type="button" onclick="formatDoc('underline')" class="p-2 rounded-md bg-gray-200 hover:bg-gray-300 transition duration-200">
+                                <u>U</u>
+                            </button>
+                            <select onchange="formatDoc('fontname', this.value)" class="p-1 rounded-md bg-gray-200 hover:bg-gray-300 transition duration-200">
+                                <option value="Arial">Arial</option>
+                                <option value="Times New Roman">Times New Roman</option>
+                                <option value="Verdana">Verdana</option>
+                                <option value="Inter">Inter (Default)</option>
+                                <option value="Georgia">Georgia</option>
+                                <option value="Courier New">Courier New</option>
+                                <option value="Impact">Impact</option>
+                                <option value="Trebuchet MS">Trebuchet MS</option>
+                                <option value="Palatino Linotype">Palatino Linotype</option>
+                                <option value="Comic Sans MS">Comic Sans MS</option>
+                            </select>
+                            <select onchange="formatDoc('fontsize', this.value)" class="p-1 rounded-md bg-gray-200 hover:bg-gray-300 transition duration-200">
+                                <option value="1">10px</option>
+                                <option value="2">13px</option>
+                                <option value="3">16px</option>
+                                <option value="4">20px</option>
+                                <option value="5">24px</option>
+                                <option value="6">32px</option>
+                                <option value="7">48px</option>
+                            </select>
+                        </div>
+                        <div id="article-content-editor" class="bg-white rounded-md shadow-sm" contenteditable="true"></div>
+                    </div>
+                    <button type="submit" id="submit-btn" class="w-full bg-blue-950 text-white font-bold py-2 px-4 rounded-md hover:bg-sky-800 transition duration-300">
+                        Tambahkan Artikel
+                    </button>
+                </form>
+            </div>
+            
+             <!-- Daftar Artikel -->
+            <div class="bg-white p-6 rounded-3xl shadow-custom">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">Daftar Artikel</h2>
+                <div id="articles-list" class="space-y-4">
+                    <!-- Daftar artikel akan dimuat oleh JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Data inisial. Variabel ini akan menyimpan semua data aplikasi.
+        // Data akan dimuat dari localStorage saat halaman pertama kali dimuat.
+        let articles = [
+            { id: 1, title: 'Kucing Lucu Selamatkan Nelayan yang Tersesat', category: 'Hewan', date: '25 Agustus 2025', summary: 'Sebuah kucing yang terlantar secara ajaib memimpin tim penyelamat menuju nelayan yang terdampar, menjadi pahlawan tak terduga.', imageUrl: 'https://placehold.co/1000x600/a0a0a0/ffffff?text=Kucing+Pahlawan', content: 'Di perairan terpencil dekat Pulau Ceria, seorang nelayan bernama Pak Budi telah terdampar selama tiga hari setelah perahunya dihantam badai. Harapan mulai pudah sampai seekor kucing oranye berbulu lebat muncul. Kucing itu, yang diberi nama Oyen oleh Pak Budi, melompat ke perahu dan mulai mengeong dengan keras, lalu melompat ke air dan berenang menuju daratan. Oyen berulang kali kembali ke perahu, menarik perhatian tim penyelamat yang kebetulan sedang berpatroli. Mereka mengikuti Oyen dan menemukan Pak Budi yang kelelahan. Kisah heroik Oyen dengan cepat menyebar dan kucing itu kini dianggap sebagai pahlawan lokal.', placement: 'beranda' },
+            { id: 2, title: 'Penemuan Arkeologi Baru di Situs Kuno', category: 'Sains', date: '24 Agustus 2025', summary: 'Arkeolog menemukan artefak unik di situs kuno, memberikan wawasan baru tentang peradaban yang hilang.', imageUrl: 'https://placehold.co/1000x600/c0c0c0/333333?text=Penemuan+Kuno', content: 'Tim arkeolog yang menggali di pedalaman hutan menemukan sisa-sisa kota kuno yang hilang. Di antara reruntuhan, mereka menemukan artefak yang belum pernah terlihat sebelumnya. Artefak tersebut adalah sebuah lempengan batu dengan ukiran rumit yang menggambarkan sistem penanggalan kuno yang sangat akurat. Penemuan ini bisa mengubah pemahaman kita tentang peradaban kuno di wilayah tersebut. Penelitian lebih lanjut sedang dilakukan untuk menguraikan tulisan dan simbol pada lempengan tersebut.', placement: 'terbaru' },
+            { id: 3, title: 'Peningkatan Teknologi AI untuk Keamanan Siber', category: 'Teknologi', date: '23 Agustus 2025', summary: 'Perusahaan teknologi meluncurkan sistem AI baru yang dapat memprediksi dan mencegah serangan siber dengan akurasi tinggi.', imageUrl: 'https://placehold.co/1000x600/d0d0d0/ffffff?text=Keamanan+Siber', content: 'Dalam konferensi teknologi, perusahaan global "TechShield" mengumumkan peluncuran sistem keamanan siber berbasis kecerdasan buatan terbarunya. Sistem ini, yang diberi nama "Aegis," menggunakan algoritma pembelajaran mendalam untuk menganalisis pola serangan siber dan mengidentifikasi ancaman potensial sebelum mereka dapat menyebabkan kerusakan. Dengan kemampuan prediktifnya, Aegis diharapkan dapat mengurangi kerentanan perusahaan dan organisasi terhadap serangan ransomware dan pencurian data.', placement: 'populer' },
+            { id: 4, title: 'Wisata Kuliner: Menjelajahi Rasa Otentik Masakan Lokal', category: 'Gaya Hidup', date: '22 Agustus 2025', summary: 'Panduan untuk menemukan permata kuliner tersembunyi, dari warung makan sederhana hingga restoran bintang lima.', imageUrl: 'https://placehold.co/1000x600/e0e0e0/333333?text=Kuliner+Lokal', content: 'Jelajahi kelezatan kuliner lokal dengan panduan wisata rasa kami. Mulai dari soto Betawi yang otentik di Jakarta hingga rendang yang kaya rempah di Padang, setiap hidangan menceritakan kisah budaya. Kami akan mengajak Anda menelusuri warung-warung makan tersembunyi yang mungkin tidak pernah Anda temukan. Siapkan lidah Anda untuk petualangan rasa yang tak terlupakan dan temukan kekayaan kuliner Indonesia.', placement: 'populer' },
+        ];
+        let menuItems = [
+            { text: 'Beranda', url: '#main-article-section' },
+            { text: 'Terbaru', url: '#recent-articles-list' },
+            { text: 'Populer', url: '#populer' },
+            { text: 'Kategori', url: '#kategori' },
+            { text: 'Kontak', url: '#kontak' },
+        ];
+        let websiteTitle = 'PORTAL BERITA';
+        let contactInfo = {
+            address: 'Jl. Contoh No. 123, Kota Contoh',
+            phone: '+62 812 3456 7890',
+            email: 'info@portalberita.com'
+        };
+        let categories = ['Politik', 'Ekonomi', 'Olahraga', 'Teknologi', 'Gaya Hidup'];
+        
+        // Mendapatkan elemen DOM
+        const publicView = document.getElementById('public-view');
+        const articleDetailView = document.getElementById('article-detail-view');
+        const categoryArticlesView = document.getElementById('category-articles-view');
+        const adminPanel = document.getElementById('admin-panel');
+        const togglePanelBtn = document.getElementById('toggle-panel-btn');
+        const togglePublicBtn = document.getElementById('toggle-public-btn');
+        const backToHomeBtn = document.getElementById('back-to-home-btn');
+        const formTitle = document.getElementById('form-title');
+        const articleForm = document.getElementById('article-form');
+        const articlesList = document.getElementById('articles-list');
+        const mainArticleSection = document.getElementById('main-article-section');
+        const logoDisplay = document.getElementById('logo-display');
+        const logoUploadInput = document.getElementById('logo-upload');
+        const updateLogoBtn = document.getElementById('update-logo-btn');
+        const websiteTitleDisplay = document.getElementById('website-title');
+        const websiteTitleInput = document.getElementById('website-title-input');
+        const updateTitleBtn = document.getElementById('update-title-btn');
+        const navMenu = document.getElementById('nav-menu');
+        const menuForm = document.getElementById('menu-form');
+        const menuText = document.getElementById('menu-text');
+        const menuUrl = document.getElementById('menu-url');
+        const menuList = document.getElementById('menu-list');
+        const submitMenuBtn = document.getElementById('submit-menu-btn');
+        const articleContentDiv = document.getElementById('article-content');
+        const footerContactDiv = document.getElementById('footer-contact');
+        const contactForm = document.getElementById('contact-form');
+        const contactAddressInput = document.getElementById('contact-address');
+        const contactPhoneInput = document.getElementById('contact-phone');
+        const contactEmailInput = document.getElementById('contact-email');
+        const recentArticlesContainer = document.getElementById('recent-articles-container');
+        const popularArticlesContainer = document.getElementById('popular-articles-container');
+        const articleContentEditor = document.getElementById('article-content-editor');
+        const placementSelect = document.getElementById('placement');
+        const categorySelect = document.getElementById('category');
+        const categoryForm = document.getElementById('category-form');
+        const categoryInput = document.getElementById('category-input');
+        const categoryList = document.getElementById('category-list');
+        const submitCategoryBtn = document.getElementById('submit-category-btn');
+        const categoryArticlesContainer = document.getElementById('kategori-container');
+        const categoryArticlesList = document.getElementById('category-articles-list');
+        const categoryTitle = document.getElementById('category-title');
+
+        let currentEditId = null;
+        let currentEditMenuIndex = null;
+        let currentEditCategoryIndex = null;
+
+        // Fungsi untuk mengaktifkan execCommand untuk editor teks
+        window.formatDoc = (command, value) => {
+            document.execCommand(command, false, value);
+        };
+
+        // Fungsi untuk menyimpan data ke localStorage
+        // Ini memastikan data tidak hilang saat halaman di-reload.
+        const saveData = () => {
+            localStorage.setItem('articles', JSON.stringify(articles));
+            localStorage.setItem('menuItems', JSON.stringify(menuItems));
+            localStorage.setItem('websiteTitle', websiteTitle);
+            localStorage.setItem('contactInfo', JSON.stringify(contactInfo));
+            localStorage.setItem('logoUrl', logoDisplay.src);
+            localStorage.setItem('categories', JSON.stringify(categories));
+        };
+
+        // Fungsi untuk memuat data dari localStorage
+        const loadData = () => {
+            const storedArticles = localStorage.getItem('articles');
+            const storedMenuItems = localStorage.getItem('menuItems');
+            const storedWebsiteTitle = localStorage.getItem('websiteTitle');
+            const storedContactInfo = localStorage.getItem('contactInfo');
+            const storedLogoUrl = localStorage.getItem('logoUrl');
+            const storedCategories = localStorage.getItem('categories');
+            
+            if (storedArticles) articles = JSON.parse(storedArticles);
+            if (storedMenuItems) menuItems = JSON.parse(storedMenuItems);
+            if (storedWebsiteTitle) websiteTitle = storedWebsiteTitle;
+            if (storedContactInfo) contactInfo = JSON.parse(storedContactInfo);
+            if (storedLogoUrl) logoDisplay.src = storedLogoUrl;
+            if (storedCategories) categories = JSON.parse(storedCategories);
+        };
+
+        // Fungsi untuk menampilkan tampilan publik (halaman utama)
+        const showPublicView = () => {
+            publicView.classList.remove('hidden');
+            articleDetailView.classList.add('hidden');
+            adminPanel.classList.add('hidden');
+            categoryArticlesView.classList.add('hidden');
+            renderPublicView();
+        };
+
+        // Fungsi untuk menampilkan panel admin
+        const showAdminPanel = () => {
+            publicView.classList.add('hidden');
+            articleDetailView.classList.add('hidden');
+            categoryArticlesView.classList.add('hidden');
+            adminPanel.classList.remove('hidden');
+            renderAdminPanel();
+            renderMenuList(); // Memanggil fungsi yang benar untuk merender daftar menu
+            renderContactPanel();
+            renderCategoryPanel(); // Memanggil fungsi untuk merender daftar kategori
+            renderCategoryOptions(); // Memanggil fungsi untuk merender opsi kategori di form artikel
+        };
+
+        // Fungsi untuk menampilkan halaman artikel detail
+        const showArticleDetail = (id) => {
+            const article = articles.find(a => a.id === id);
+            if (article) {
+                articleContentDiv.innerHTML = `
+                    <img src="${article.imageUrl}" alt="${article.title}" class="w-full max-h-96 object-contain rounded-3xl mb-6 shadow-custom">
+                    <h1 class="text-4xl font-extrabold text-gray-900 mb-4">${article.title}</h1>
+                    <p class="text-gray-600 text-sm mb-6">
+                        <span class="font-semibold text-sky-700">${article.category}</span> - ${article.date}
+                    </p>
+                    <div class="text-gray-700 leading-relaxed">${article.content}</div>
+                `;
+                publicView.classList.add('hidden');
+                adminPanel.classList.add('hidden');
+                categoryArticlesView.classList.add('hidden');
+                articleDetailView.classList.remove('hidden');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        };
+
+        // Fungsi untuk menampilkan halaman artikel per kategori
+        window.showCategoryView = (category) => {
+            publicView.classList.add('hidden');
+            articleDetailView.classList.add('hidden');
+            adminPanel.classList.add('hidden');
+            categoryArticlesView.classList.remove('hidden');
+            
+            categoryTitle.textContent = `Artikel dalam Kategori: ${category}`;
+            const filteredArticles = articles.filter(a => a.category === category);
+            let categoryHtml = '';
+            filteredArticles.forEach(article => {
+                 categoryHtml += `
+                    <a href="javascript:void(0)" onclick="showArticleDetail(${article.id})" class="block bg-white rounded-2xl shadow-custom p-4 flex flex-col sm:flex-row gap-4 items-center">
+                        <img src="${article.imageUrl}" alt="${article.title}" class="w-full sm:w-40 sm:h-auto h-40 object-contain rounded-xl">
+                        <div class="flex-1">
+                            <h3 class="text-2xl font-semibold text-gray-900 leading-snug mb-1 hover:text-sky-500 transition duration-300">${article.title}</h3>
+                            <p class="text-sm text-gray-600 mb-2">${article.summary}</p>
+                            <p class="text-xs text-gray-500 mt-1">${article.date}</p>
+                        </div>
+                    </a>
+                `;
+            });
+            categoryArticlesList.innerHTML = categoryHtml || '<p class="text-center text-gray-500">Belum ada artikel di kategori ini.</p>';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
+
+
+        // Render tampilan publik dari array `articles`
+        const renderPublicView = () => {
+            // Perbarui judul website, menu navigasi, dan kontak
+            websiteTitleDisplay.textContent = websiteTitle;
+            renderNavMenu();
+            renderFooterContact();
+
+            if (articles.length === 0) {
+                mainArticleSection.innerHTML = '<p class="text-center text-gray-500">Belum ada artikel yang tersedia.</p>';
+                return;
+            }
+
+            // Filter artikel untuk bagian "Beranda", "Terbaru", dan "Populer"
+            const mainArticle = articles.find(a => a.placement === 'beranda');
+            const latestArticles = articles.filter(a => a.placement === 'terbaru');
+            const popularArticles = articles.filter(a => a.placement === 'populer');
+            
+            // Render artikel utama (artikel beranda) dan artikel terbaru
+            if (mainArticle) {
+                mainArticleSection.innerHTML = `
+                <div class="lg:w-2/3">
+                    <a href="javascript:void(0)" onclick="showArticleDetail(${mainArticle.id})" class="block bg-white rounded-3xl shadow-custom overflow-hidden">
+                        <img src="${mainArticle.imageUrl}" alt="${mainArticle.title}" class="w-full h-80 object-contain">
+                        <div class="p-6">
+                            <h1 class="text-3xl font-extrabold text-gray-900 leading-tight mb-2 hover:text-sky-500 transition duration-300">
+                                ${mainArticle.title}
+                            </h1>
+                            <p class="text-gray-600 mb-4 text-sm">
+                                <span class="font-semibold text-sky-700">${mainArticle.category}</span> - ${mainArticle.date}
+                            </p>
+                            <p class="text-gray-700 leading-relaxed">
+                                ${mainArticle.summary}
+                            </p>
+                        </div>
+                    </a>
+                </div>
+                <div class="lg:w-1/3 p-6 bg-white rounded-3xl shadow-custom" id="recent-articles-list">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6">Berita Terbaru</h2>
+                    <div id="recent-articles-container" class="space-y-4">
+                        <!-- Konten akan dimuat oleh JavaScript -->
+                    </div>
+                </div>
+                `;
+            } else {
+                // Jika tidak ada artikel beranda, tampilkan pesan
+                mainArticleSection.innerHTML = '<p class="text-center text-gray-500 w-full">Belum ada artikel utama yang ditetapkan.</p>';
+            }
+
+            // Render daftar artikel terbaru
+            const currentRecentContainer = document.getElementById('recent-articles-container');
+            if (currentRecentContainer) {
+                let recentHtml = '';
+                // Urutkan artikel terbaru berdasarkan tanggal (paling baru di atas)
+                latestArticles.sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(article => {
+                    recentHtml += `
+                        <a href="javascript:void(0)" onclick="showArticleDetail(${article.id})" class="block bg-white rounded-2xl shadow-custom p-4 flex gap-4 items-center">
+                            <img src="${article.imageUrl}" alt="${article.title}" class="w-20 h-20 object-contain rounded-xl">
+                            <div class="flex-1">
+                                <h3 class="text-lg font-semibold text-gray-900 leading-snug hover:text-sky-500 transition duration-300">${article.title}</h3>
+                                <p class="text-xs text-gray-500 mt-1">${article.date}</p>
+                            </div>
+                        </a>
+                    `;
+                });
+                currentRecentContainer.innerHTML = recentHtml;
+            }
+
+            // Render daftar artikel populer
+            const popularContainer = document.getElementById('popular-articles-container');
+            let popularHtml = '';
+            // Urutkan artikel populer berdasarkan tanggal (paling baru di atas)
+            const sortedPopularArticles = popularArticles.sort((a, b) => new Date(b.date) - new Date(a.date));
+            const popularArticleCards = sortedPopularArticles.map(article => `
+                <a href="javascript:void(0)" onclick="showArticleDetail(${article.id})" class="block bg-white rounded-2xl shadow-custom overflow-hidden transform hover:scale-105 transition duration-300">
+                    <img src="${article.imageUrl}" alt="${article.title}" class="w-full h-40 object-contain">
+                    <div class="p-4">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-1 hover:text-sky-500 transition duration-300">${article.title}</h3>
+                        <p class="text-xs text-gray-500">${article.date}</p>
+                    </div>
+                </a>
+            `).join('');
+            
+            // Duplikat konten 5 kali untuk memastikan pergerakan tanpa jeda
+            popularHtml = popularArticleCards.repeat(5); 
+            popularContainer.innerHTML = popularHtml;
+
+
+            // Render kategori di halaman utama
+            let categoryHtml = '';
+            categories.forEach(cat => {
+                categoryHtml += `
+                    <a href="javascript:void(0)" onclick="showCategoryView('${cat}')" class="p-6 bg-sky-700 text-white rounded-2xl shadow-custom hover:bg-sky-800 transition duration-300">
+                        <span class="font-semibold text-lg">${cat}</span>
+                    </a>
+                `;
+            });
+            categoryArticlesContainer.innerHTML = categoryHtml;
+        };
+
+        // Render menu navigasi di tampilan publik
+        const renderNavMenu = () => {
+            let menuHtml = '';
+            menuItems.forEach(item => {
+                menuHtml += `<a href="${item.url}" class="hover:text-sky-700 transition duration-300">${item.text}</a>`;
+            });
+            navMenu.innerHTML = menuHtml;
+        };
+
+        // Render daftar menu di panel admin
+        const renderAdminPanel = () => {
+            let html = '';
+            articles.sort((a,b) => b.id - a.id).forEach(article => {
+                 html += `
+                    <div class="bg-gray-50 rounded-2xl shadow-sm p-4 flex flex-col md:flex-row justify-between items-center gap-4">
+                        <div class="flex-1">
+                            <h3 class="text-lg font-semibold text-gray-900">${article.title}</h3>
+                            <p class="text-sm text-gray-500">${article.category} - ${article.date}</p>
+                            <p class="text-xs text-gray-400">Penempatan: ${article.placement}</p>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="editArticle(${article.id})" class="bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 transition duration-300">Edit</button>
+                            <button onclick="deleteArticle(${article.id})" class="bg-red-500 text-white py-2 px-4 rounded-md hover:bg-red-600 transition duration-300">Hapus</button>
+                        </div>
+                    </div>
+                `;
+            });
+            articlesList.innerHTML = html;
+        };
+
+        // Render daftar menu di panel admin
+        const renderMenuList = () => {
+            let listHtml = '';
+            menuItems.forEach((item, index) => {
+                listHtml += `
+                    <div class="bg-gray-50 rounded-md shadow-sm p-3 flex justify-between items-center gap-4">
+                        <p class="text-gray-700 font-medium flex-1">${item.text}</p>
+                        <div class="flex gap-2">
+                            <button onclick="editMenuItem(${index})" class="bg-blue-500 text-white p-2 rounded-md hover:bg-blue-600 transition duration-300">Edit</button>
+                            <button onclick="deleteMenuItem(${index})" class="bg-red-500 text-white p-2 rounded-md hover:bg-red-600 transition duration-300">Hapus</button>
+                        </div>
+                    </div>
+                `;
+            });
+            menuList.innerHTML = listHtml;
+        };
+        
+        // Fungsi untuk merender daftar kategori di panel admin
+        const renderCategoryPanel = () => {
+            let listHtml = '';
+            categories.forEach((category, index) => {
+                listHtml += `
+                    <div class="bg-gray-50 rounded-md shadow-sm p-3 flex justify-between items-center gap-4">
+                        <p class="text-gray-700 font-medium flex-1">${category}</p>
+                        <div class="flex gap-2">
+                            <button onclick="editCategory(${index})" class="bg-blue-500 text-white p-2 rounded-md hover:bg-blue-600 transition duration-300">Edit</button>
+                            <button onclick="deleteCategory(${index})" class="bg-red-500 text-white p-2 rounded-md hover:bg-red-600 transition duration-300">Hapus</button>
+                        </div>
+                    </div>
+                `;
+            });
+            categoryList.innerHTML = listHtml;
+        };
+
+        // Fungsi untuk merender opsi kategori di form artikel
+        const renderCategoryOptions = () => {
+            let optionsHtml = '<option value="">Pilih Kategori</option>';
+            categories.forEach(category => {
+                optionsHtml += `<option value="${category}">${category}</option>`;
+            });
+            categorySelect.innerHTML = optionsHtml;
+        };
+
+        // Fungsi untuk mengedit item menu
+        window.editMenuItem = (index) => {
+            const itemToEdit = menuItems[index];
+            if (itemToEdit) {
+                menuText.value = itemToEdit.text;
+                menuUrl.value = itemToEdit.url;
+                submitMenuBtn.textContent = 'Simpan Perubahan';
+                currentEditMenuIndex = index;
+            }
+        };
+
+        // Fungsi untuk menghapus item menu
+        window.deleteMenuItem = (index) => {
+            menuItems.splice(index, 1);
+            saveData();
+            renderNavMenu();
+            renderMenuList();
+        };
+
+        // Fungsi untuk mengelola form menu
+        const handleMenuSubmit = (e) => {
+            e.preventDefault();
+            const text = menuText.value.trim();
+            const url = menuUrl.value.trim();
+            if (text && url) {
+                if (currentEditMenuIndex !== null) {
+                    // Mode Edit
+                    menuItems[currentEditMenuIndex] = { text, url };
+                    currentEditMenuIndex = null;
+                    submitMenuBtn.textContent = 'Tambah Menu';
+                } else {
+                    // Mode Tambah
+                    menuItems.push({ text, url });
+                }
+                saveData();
+                renderNavMenu();
+                renderMenuList();
+                menuForm.reset();
+            }
+        };
+
+        // Fungsi untuk mengedit kategori
+        window.editCategory = (index) => {
+            const categoryToEdit = categories[index];
+            if (categoryToEdit) {
+                categoryInput.value = categoryToEdit;
+                submitCategoryBtn.textContent = 'Simpan Perubahan';
+                currentEditCategoryIndex = index;
+            }
+        };
+
+        // Fungsi untuk menghapus kategori
+        window.deleteCategory = (index) => {
+            const categoryToDelete = categories[index];
+            categories.splice(index, 1);
+            // Hapus kategori yang sama dari artikel
+            articles.forEach(article => {
+                if (article.category === categoryToDelete) {
+                    article.category = ''; // Kosongkan kategori di artikel yang relevan
+                }
+            });
+            saveData();
+            renderPublicView();
+            renderAdminPanel();
+        };
+        
+        // Fungsi untuk mengelola form kategori
+        const handleCategorySubmit = (e) => {
+            e.preventDefault();
+            const newCategory = categoryInput.value.trim();
+            if (newCategory) {
+                if (currentEditCategoryIndex !== null) {
+                    // Mode Edit
+                    const oldCategory = categories[currentEditCategoryIndex];
+                    categories[currentEditCategoryIndex] = newCategory;
+                    // Perbarui kategori di artikel yang sudah ada
+                    articles.forEach(article => {
+                        if (article.category === oldCategory) {
+                            article.category = newCategory;
+                        }
+                    });
+                    currentEditCategoryIndex = null;
+                    submitCategoryBtn.textContent = 'Tambah Kategori';
+                } else {
+                    // Mode Tambah
+                    categories.push(newCategory);
+                }
+                saveData();
+                renderPublicView();
+                renderCategoryPanel();
+                renderCategoryOptions();
+                categoryForm.reset();
+            }
+        };
+
+        // Mengatur form untuk mode Edit artikel
+        const setFormForEdit = (article) => {
+            formTitle.textContent = 'Edit Artikel';
+            document.getElementById('title').value = article.title;
+            renderCategoryOptions(); // Pastikan opsi terbaru dimuat
+            document.getElementById('category').value = article.category;
+            placementSelect.value = article.placement; // Mengisi dropdown penempatan
+            document.getElementById('summary').value = article.summary;
+            articleContentEditor.innerHTML = article.content; // Mengisi div contenteditable
+            document.getElementById('submit-btn').textContent = 'Simpan Perubahan';
+            currentEditId = article.id;
+        };
+
+        // Mengatur form kembali ke mode Tambah artikel
+        const setFormForAdd = () => {
+            formTitle.textContent = 'Tambah Artikel Baru';
+            articleForm.reset();
+            articleContentEditor.innerHTML = ''; // Mengosongkan div contenteditable
+            document.getElementById('submit-btn').textContent = 'Tambahkan Artikel';
+            currentEditId = null;
+            renderCategoryOptions(); // Pastikan opsi terbaru dimuat
+        };
+
+        // Fungsi untuk mengedit artikel
+        window.editArticle = (id) => {
+            const articleToEdit = articles.find(article => article.id === id);
+            if (articleToEdit) {
+                setFormForEdit(articleToEdit);
+            }
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
+
+        // Fungsi untuk menghapus artikel
+        window.deleteArticle = (id) => {
+            const articleIndex = articles.findIndex(article => article.id === id);
+            if (articleIndex > -1) {
+                articles.splice(articleIndex, 1);
+                saveData();
+                renderPublicView();
+                renderAdminPanel();
+            }
+        };
+
+        // Render info kontak di footer
+        const renderFooterContact = () => {
+            footerContactDiv.innerHTML = `
+                <p><strong>Alamat:</strong> ${contactInfo.address}</p>
+                <p><strong>Telepon:</strong> ${contactInfo.phone}</p>
+                <p><strong>Email:</strong> ${contactInfo.email}</p>
+            `;
+        };
+        // Mengisi form kontak saat panel admin dibuka
+        const renderContactPanel = () => {
+            contactAddressInput.value = contactInfo.address;
+            contactPhoneInput.value = contactInfo.phone;
+            contactEmailInput.value = contactInfo.email;
+        };
+
+        // Event listener untuk form artikel
+        articleForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            const title = document.getElementById('title').value;
+            const category = categorySelect.value;
+            const summary = document.getElementById('summary').value;
+            const imageFile = document.getElementById('image-upload').files[0];
+            const content = articleContentEditor.innerHTML; // Mengambil konten dari div
+            const placement = placementSelect.value;
+            const currentDate = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+
+            const processArticle = (imageUrl) => {
+                if (currentEditId) {
+                    const article = articles.find(a => a.id === currentEditId);
+                    if (article) {
+                        article.title = title;
+                        article.category = category;
+                        article.summary = summary;
+                        article.imageUrl = imageUrl;
+                        article.content = content;
+                        article.placement = placement;
+                        article.date = currentDate;
+                    }
+                } else {
+                    const newId = articles.length > 0 ? Math.max(...articles.map(a => a.id)) + 1 : 1;
+                    const newArticle = { id: newId, title, category, summary, imageUrl, content, placement, date: currentDate };
+                    articles.unshift(newArticle);
+                }
+                
+                saveData();
+                renderPublicView();
+                renderAdminPanel();
+                setFormForAdd();
+            };
+
+            if (imageFile) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    processArticle(event.target.result);
+                };
+                reader.readAsDataURL(imageFile);
+            } else {
+                // Jika tidak ada gambar baru diunggah, pertahankan yang lama dalam mode edit
+                let imageUrl = '';
+                if (currentEditId) {
+                    const article = articles.find(a => a.id === currentEditId);
+                    if (article) {
+                        imageUrl = article.imageUrl;
+                    }
+                }
+                // Jika tidak ada gambar dan tidak dalam mode edit, gunakan placeholder
+                if (!imageUrl) {
+                    imageUrl = 'https://placehold.co/1000x600/a0a0a0/ffffff?text=Placeholder';
+                }
+                processArticle(imageUrl);
+            }
+        });
+
+        // Event listener untuk form kontak
+        contactForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            contactInfo.address = contactAddressInput.value;
+            contactInfo.phone = contactPhoneInput.value;
+            contactInfo.email = contactEmailInput.value;
+            saveData();
+            renderFooterContact();
+        });
+
+        // Event listener untuk tombol perbarui logo
+        updateLogoBtn.addEventListener('click', () => {
+            const logoFile = document.getElementById('logo-upload').files[0];
+            if (logoFile) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const newLogoUrl = event.target.result;
+                    logoDisplay.src = newLogoUrl;
+                    saveData();
+                    renderPublicView();
+                };
+                reader.readAsDataURL(logoFile);
+            } else {
+                logoDisplay.src = '';
+                saveData();
+                renderPublicView();
+            }
+        });
+
+        // Event listener untuk tombol perbarui judul website
+        updateTitleBtn.addEventListener('click', () => {
+            const newTitle = websiteTitleInput.value;
+            if (newTitle) {
+                websiteTitle = newTitle;
+                saveData();
+                renderPublicView();
+                websiteTitleInput.value = '';
+            }
+        });
+
+        // Event listeners untuk tombol toggle
+        togglePanelBtn.addEventListener('click', showAdminPanel);
+        togglePublicBtn.addEventListener('click', showPublicView);
+        backToHomeBtn.addEventListener('click', showPublicView);
+        menuForm.addEventListener('submit', handleMenuSubmit);
+        categoryForm.addEventListener('submit', handleCategorySubmit);
+
+        // Render tampilan awal saat halaman dimuat
+        loadData();
+        renderPublicView();
+    </script>
+</body>
+</html>
